@@ -113,17 +113,21 @@ v1 只做一件事：把 Apple 健康数据自动、增量、可靠地 POST 到�
 
 **P0 准备（Duncan 亲自做）**
 
-- [ ] 定 App 名字和 Bundle ID（备案后改名要重新备案）
-- [ ] GitHub 建仓库 a78c7/<repo>，MIT 协议
-- [ ] Apple Developer 创建 App ID，勾选 HealthKit（含 Background Delivery）、App Groups
-- [ ] 阿里云发起 App 备案（见「备案与上架」）
+- [x] 定 App 名字和 Bundle ID（备案后改名要重新备案）
+  - App Store 名「HealthHook 健康同步」（「健康同步」「HealthSync 健康同步」已被别人占用），手机桌面显示「健康同步」
+  - Bundle ID `com.a78c7.healthsync`；App Store Connect 记录已建（Apple ID 6822760189，SKU `healthsync`）
+- [x] GitHub 建仓库 a78c7/health-sync，MIT 协议
+- [x] Apple Developer 创建 App ID，勾选 HealthKit（含 Background Delivery）、App Groups
+  - App Group `group.com.a78c7.healthsync` 由 Xcode 自动签名注册
+- [ ] 阿里云发起 App 备案（见「备案与上架」）—— 延后，见文末「当前进度 / 下一步」
 
 **P1 骨架 + 读数据**
 
-- [ ] Xcode 工程、目录结构、SwiftLint、单元测试 target
-- [ ] HealthKit 权限页，20 种类型可勾选
-- [ ] 调试页：列出每种类型最近 24 小时条数
-- 验收：真机上看到昨晚睡眠分期，和「健康」App 一致
+- [x] Xcode 工程、目录结构、SwiftLint、单元测试 target
+  - lint 改用 Xcode 自带的 swift-format，不装第三方工具：`make lint` / `make format`
+- [x] HealthKit 权限页，20 种类型可勾选
+- [x] 调试页：列出每种类型最近 24 小时条数
+- 验收：真机上看到昨晚睡眠分期，和「健康」App 一致 —— 待真机核对
 
 **P2 Webhook + 手动同步**
 
@@ -187,8 +191,36 @@ v1 只做一件事：把 Apple 健康数据自动、增量、可靠地 POST 到�
 
 ## 待决定
 
-- [ ] App 名字（中/英）和 Bundle ID
-- [ ] 最低系统：iOS 17（覆盖广，建议）还是 iOS 26
+- [x] App 名字（中/英）和 Bundle ID：HealthHook 健康同步 / `com.a78c7.healthsync`
+- [x] 最低系统：iOS 17
 - [ ] 是否加「HAE 兼容格式」开关（建议 v1.1）
 - [ ] 接收端独立还是并入现有 life-log 服务
 - [ ] 「给 Claude 分析」的方式：导出文件手动发，还是以后做成 MCP 服务
+
+## 当前进度 / 下一步
+
+**当前进度（2026-10-14）**
+
+- P0 中开发这边能做的已完成：App 名、Bundle ID、App ID、App Store Connect 记录、GitHub 仓库。
+- P1 代码完成：20 种类型勾选与授权、调试页（最近 24 小时条数 + 按来源分开的睡眠分期），24 个单元测试通过，lint 干净。真机验收待核对。
+
+**下一步**
+
+1. 真机核对 P1 验收（睡眠分期和「健康」App 一致）。
+2. P2：Webhook 增删改 + 自定义 Header、JSON 编码器、锚点增量 + 分批 + 重试、历史回填。
+3. 备案延后：开发者账号正在转为公司组织账号，备案主办者要和 App 卖家一致，所以改用公司主体，等拿到 D-U-N-S、账号转换完成后再做。上面「备案与上架」一节里「和 a78c7.com 用同一个个人主体」的说法作废，届时重写；a78c7.com 是个人备案，公司备案里能否填它、后台域名能否不填，到时再查。
+
+**本次查实的事（给后面的阶段用）**
+
+- 读取从没请求过权限的类型，HealthKit 报 `errorAuthorizationNotDetermined`；用户拒绝读取则表现为「没有数据」，App 无法知道是否被拒。
+- 血压只能按收缩压、舒张压两个 quantity type 请求和读取，关联类型不能直接请求。P2 编码时两个分量各一条样本、各自 UUID。
+- 血氧、体脂率在 HealthKit 里是 0–1 的小数（0.97 = 97%）。P2 定 JSON 时要决定发 0.97 还是 97。
+- 体能训练的活动类型调试页暂时只显示编号，P2 要做 `HKWorkoutActivityType` → `running` 等名称的映射。
+- iOS 27 新增「限时授权」：用户可以只给最近一段历史，`HKHealthStore.earliestAuthorizedSampleDate(for:)`（仅 iOS 27+）能查到起始日期。P2 历史回填要用它定起点，并提示用户。
+- iOS 27 的授权页写明：App 只在打开时能读数据，要在「设置 → 通用 → 后台 App 刷新」里打开才能后台读。P4 的后台同步依赖这个开关，首页要检查并引导。
+- 调试页的「昨晚」= 醒来那天的前一天 18:00 到当天 18:00（本地时间），按记录开始时间统计，每个来源分开算。
+
+**开发备注**
+
+- 常用命令：`make test`（模拟器跑单元测试）、`make lint`、`make format`、`make build`。
+- Xcode 27 里模拟器窗口叫 Device Hub（原 Simulator.app）。
