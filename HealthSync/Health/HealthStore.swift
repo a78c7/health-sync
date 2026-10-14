@@ -107,7 +107,7 @@ extension HealthStore {
     static func message(for error: any Error) -> String {
         if let error = error as? HKError {
             switch error.code {
-            case .errorAuthorizationNotDetermined: return "还没请求过这个类型的读取权限"
+            case .errorAuthorizationNotDetermined: return "还没请求读取权限，先到「数据类型」页点「请求读取权限」"
             case .errorDatabaseInaccessible: return "手机锁着时读不到健康数据，解锁后再刷新"
             case .errorHealthDataUnavailable: return "这台设备不支持「健康」数据"
             default: break

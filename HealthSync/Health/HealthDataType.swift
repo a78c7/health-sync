@@ -39,7 +39,7 @@ enum HealthDataType: String, CaseIterable, Identifiable, Sendable {
             case .sleep: "睡眠"
             case .heart: "心脏"
             case .respiratory: "呼吸"
-            case .activity: "活动"
+            case .activity: "健身记录"
             case .body: "身体测量"
             }
         }
@@ -49,7 +49,7 @@ enum HealthDataType: String, CaseIterable, Identifiable, Sendable {
 
     var id: Self { self }
 
-    /// Names follow the zh-Hans Health app where it has one, so users can match them up.
+    /// Names match the zh-Hans Health permission sheet, so users can match them up.
     var title: String {
         switch self {
         case .sleep: "睡眠（含分期）"
@@ -58,11 +58,11 @@ enum HealthDataType: String, CaseIterable, Identifiable, Sendable {
         case .walkingHeartRateAverage: "步行平均心率"
         case .heartRateVariabilitySDNN: "心率变异性（SDNN）"
         case .bloodPressure: "血压"
-        case .vo2Max: "最大摄氧量"
+        case .vo2Max: "有氧适能（最大摄氧量）"
         case .oxygenSaturation: "血氧"
-        case .respiratoryRate: "呼吸速率"
+        case .respiratoryRate: "呼吸频率"
         case .stepCount: "步数"
-        case .distanceWalkingRunning: "步行 + 跑步距离"
+        case .distanceWalkingRunning: "步行+跑步距离"
         case .flightsClimbed: "已爬楼层"
         case .activeEnergyBurned: "活动能量"
         case .basalEnergyBurned: "静息能量"
@@ -71,7 +71,7 @@ enum HealthDataType: String, CaseIterable, Identifiable, Sendable {
         case .workout: "体能训练（摘要，不含轨迹）"
         case .bodyMass: "体重"
         case .bodyFatPercentage: "体脂率"
-        case .sleepingWristTemperature: "睡眠时手腕温度"
+        case .sleepingWristTemperature: "手腕温度（睡眠时）"
         }
     }
 
